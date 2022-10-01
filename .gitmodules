@@ -1,0 +1,3 @@
+[submodule "AppToolkit"]
+	path = AppToolkit
+	url = https://github.com/Kape94/AppToolkit.git
