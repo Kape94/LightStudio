@@ -1,6 +1,8 @@
 #ifndef _SHADER_H
 #define _SHADER_H
 
+#include <glm/vec3.hpp>
+
 class Shader {
   public:
 
@@ -12,6 +14,21 @@ class Shader {
     void Delete();
 
     void Use();
+
+    void SetUniform(
+      const char* uniformName, 
+      const glm::vec3& value
+    ) const;
+
+    void SetUniform(
+      const char* uniformName, 
+      const float value
+    ) const;
+
+    void SetUniform(
+      const char* uniformName,
+      const int value
+    ) const;
 
   private:
 

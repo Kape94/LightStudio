@@ -43,3 +43,36 @@ void Shader::Use()
 }
 
 //-----------------------------------------------------------------------------
+
+void Shader::SetUniform(
+  const char* uniformName,
+  const glm::vec3& value
+) const
+{
+  const int loc = glGetUniformLocation(this->id, uniformName);
+  glUniform3f(loc, value.x, value.y, value.z);
+}
+
+//-----------------------------------------------------------------------------
+
+void Shader::SetUniform(
+  const char* uniformName,
+  const float value
+) const
+{
+  const int loc = glGetUniformLocation(this->id, uniformName);
+  glUniform1f(loc, value);
+}
+
+//-----------------------------------------------------------------------------
+
+void Shader::SetUniform(
+  const char* uniformName, 
+  const int value
+) const
+{
+  const int loc = glGetUniformLocation(this->id, uniformName);
+  glUniform1i(loc, value);
+}
+
+//-----------------------------------------------------------------------------
