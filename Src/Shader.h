@@ -1,6 +1,7 @@
 #ifndef _SHADER_H
 #define _SHADER_H
 
+#include <glm/mat4x4.hpp>
 #include <glm/vec3.hpp>
 
 class Shader {
@@ -14,6 +15,11 @@ class Shader {
     void Delete();
 
     void Use();
+
+    void SetUniform(
+      const char* uniformName,
+      const glm::mat4x4& value
+    ) const;
 
     void SetUniform(
       const char* uniformName, 

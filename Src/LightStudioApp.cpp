@@ -3,6 +3,11 @@
 #include "Buffer.h"
 #include "Shader.h"
 
+#include <glm/geometric.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <string>
 #include <vector>
 
 const char* vShaderCode = R"(
@@ -13,9 +18,11 @@ const char* vShaderCode = R"(
 
   out vec3 color;
 
+  uniform mat4 cameraTransform;
+
   void main()
   {
-    gl_Position = vec4(pos, 1.0);
+    gl_Position = cameraTransform * vec4(pos, 1.0);
     color = col;
   }
 )";
@@ -42,11 +49,13 @@ const char* phongVertexShader = R"(
   out vec3 fragPos;
   out vec3 fragNorm;
 
+  uniform mat4 cameraTransform;
+
   void main()
   {
     fragPos = pos;
     fragNorm = norm;
-    gl_Position = vec4(pos, 1.0);
+    gl_Position = cameraTransform * vec4(pos, 1.0);
   }
 )";
 
@@ -175,48 +184,203 @@ Buffer buffer;
 void LightStudioApp::Initialize()
 {
   shader.Create(phongVertexShader, phongFragmentShader);
-  
+
   std::vector<float> vertices = {
-    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
-    0.5f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f,
-    0.0f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f,
-    0.5f, 1.0f, 0.0f, 0.0f, 0.0f, -1.0f
+    -1.0f, -1.0f, -1.0f, -0.57f, -0.57f, -0.57f,
+    1.0f, -1.0f, -1.0f, 0.57f, -0.57f, -0.57f,
+    1.0f, 1.0f, -1.0f, 0.57f, 0.57f, -0.57f,
+    -1.0f, 1.0f, -1.0f, -0.57f, 0.57f, -0.57f,
+    -1.0f, 1.0f, 1.0f, -0.57f, 0.57f, 0.57f,
+    1.0f, 1.0f, 1.0f, 0.57f, 0.57f, 0.57f,
+    1.0f, -1.0f, 1.0f, 0.57f, -0.57f, 0.57f,
+    -1.0f, -1.0f, 1.0f, -0.57f, -0.57f, 0.57f
   };
   const unsigned nFloats = vertices.size();
 
-  std::vector<unsigned> indices = { 0, 1, 2, 1, 3, 2 };
+  std::vector<unsigned> indices = {
+    0, 1, 2, 0, 2, 3, // front
+    6, 7, 4, 6, 4, 5, // back
+    7, 0, 3, 7, 3, 4, // left
+    1, 6, 5, 1, 5, 2, // right
+    3, 2, 5, 3, 5, 4, // top
+    7, 6, 1, 7, 1, 0  // bottom 
+  };
   const unsigned nIndices = indices.size();
-
   buffer.Create(
     vertices.data(),
     nFloats,
     indices.data(),
     nIndices,
-    { {3, 0}/*position*/, {3, 1}/*normal*/}
+    { {3, 0}/*position*/, {3, 1}/*normal*/ }
   );
+
+  const glm::vec3 origin{ 0.0, 0.0, 0.0 };
+  cameraPos = { 0.0, 0.0, 5.0 };
+  cameraDir = glm::normalize(origin - cameraPos);
+
+  materialAmbient = { 1.0f, 0.0f, 1.0f };
+  materialDiffuse = { 1.0f, 0.0f, 1.0f };
+  materialSpecular = { 1.0f, 0.0f, 1.0f };
+  materialShininess = 32.0f;
+
+  for (size_t i = 0; i < 4; ++i) {
+    Light& light = lights[i];
+
+    light.ambient = { 0.2f, 0.2f, 0.2f };
+    light.diffuse = { 0.5f, 0.5f, 0.5f };
+    light.specular = { 1.0f, 1.0f, 1.0f };
+    light.direction = { 0.0f, 0.0f, 1.0f };
+
+    light.position = { 0.0f, 0.0f, -5.0f };
+    light.quadratic = 0.2f;
+    light.linear = 0.22f;
+    light.constant = 1.0f;
+
+    light.enabled = false;
+    light.isDirectional = true;
+  }
+
+  lights[0].enabled = true;
+
+  glEnable(GL_DEPTH_TEST);
 }
 
 //-----------------------------------------------------------------------------
 
 void LightStudioApp::Render()
 {
-  shader.SetUniform("material.ambient", glm::vec3(1.0f, 0.0f, 1.0f));
-  shader.SetUniform("material.diffuse", glm::vec3(1.0f, 0.0f, 1.0f));
-  shader.SetUniform("material.specular", glm::vec3(1.0f, 0.0f, 1.0f));
-  shader.SetUniform("material.shininess", 32.0f);
+  shader.SetUniform("material.ambient", materialAmbient);
+  shader.SetUniform("material.diffuse", materialDiffuse);
+  shader.SetUniform("material.specular", materialSpecular);
+  shader.SetUniform("material.shininess", materialShininess);
 
-  shader.SetUniform("directionalLights[0].ambient", glm::vec3(1.0f, 1.0f, 1.0f));
-  shader.SetUniform("directionalLights[0].diffuse", glm::vec3(1.0f, 1.0f, 1.0f));
-  shader.SetUniform("directionalLights[0].specular", glm::vec3(1.0f, 1.0f, 1.0f));
-  shader.SetUniform("directionalLights[0].direction", glm::vec3(0.0f, 0.0f, 1.0f));
+  int nDirectionalLights = 0;
+  int nPointLights = 0;
 
-  shader.SetUniform("nDirectionalLights", 1);
-  shader.SetUniform("nPointLights", 0);
+  for (size_t i = 0; i < 4; ++i) {
+    Light& light = lights[i];
+    if (!light.enabled) {
+      continue;
+    }
 
-  shader.SetUniform("viewPosition", glm::vec3(0.0f, 0.0f, -1.0f));
+    if (light.isDirectional) {
+      const std::string iLight = "directionalLights[" + std::to_string(i) + "].";
+      shader.SetUniform(std::string(iLight + "ambient").c_str(), light.ambient);
+      shader.SetUniform(std::string(iLight + "diffuse").c_str(), light.diffuse);
+      shader.SetUniform(std::string(iLight + "specular").c_str(), light.specular);
+      shader.SetUniform(std::string(iLight + "direction").c_str(), light.direction);
+
+      ++nDirectionalLights;
+    }
+    else {
+      const std::string iLight = "pointLights[" + std::to_string(i) + "].";
+      shader.SetUniform(std::string(iLight + "ambient").c_str(), light.ambient);
+      shader.SetUniform(std::string(iLight + "diffuse").c_str(), light.diffuse);
+      shader.SetUniform(std::string(iLight + "specular").c_str(), light.specular);
+      shader.SetUniform(std::string(iLight + "position").c_str(), light.position);
+      shader.SetUniform(std::string(iLight + "quadratic").c_str(), light.quadratic);
+      shader.SetUniform(std::string(iLight + "linear").c_str(), light.linear);
+      shader.SetUniform(std::string(iLight + "constant").c_str(), light.constant);
+
+      ++nPointLights;
+    }
+  }
+
+  shader.SetUniform("nDirectionalLights", nDirectionalLights);
+  shader.SetUniform("nPointLights", nPointLights);
+
+  shader.SetUniform("viewPosition", cameraPos);
+
+  const glm::mat4x4 view = glm::lookAt(cameraPos, cameraDir * 10.0f, { 0.0, 1.0, 0.0 });
+  const glm::mat4x4 proj = glm::perspective(glm::radians(60.0f), (float)1280 / 960, 0.1f, 1000.0f);
+  const glm::mat4x4 cameraTransform = proj * view;
+
+  shader.SetUniform("cameraTransform", cameraTransform);
 
   shader.Use();
   buffer.Render();
+}
+
+//-----------------------------------------------------------------------------
+
+void LightStudioApp::Update(
+  AppToolkit::IAppUtils& appUtils
+)
+{
+  constexpr glm::vec2 screenCenter(1280 / 2, 960 / 2);
+  if (appUtils.IsPressed(AppToolkit::MouseButton::RIGHT)) {
+    appUtils.SetMousePos(screenCenter);
+  }
+  if (appUtils.IsHold(AppToolkit::MouseButton::RIGHT)) {
+    const glm::vec3 zAxis = glm::normalize(cameraDir);
+    glm::vec3 up{ 0.0f, 1.0f, 0.0f };
+    if (1.0f - glm::abs(glm::dot(zAxis, up)) < 0.01f) {
+      up = { 1.0f, 0.0f, 0.0f };
+    }
+
+    const glm::vec3 xAxis = glm::normalize(glm::cross(zAxis, up));
+    const glm::vec3 yAxis = glm::normalize(glm::cross(zAxis, xAxis));
+
+    const glm::vec2 pos = appUtils.GetMousePos();
+    const glm::vec2 offset = pos - screenCenter;
+
+    appUtils.SetMousePos(screenCenter);
+
+    if (glm::abs(offset.x) > 0) {
+      glm::mat4x4 rot = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(offset.x), yAxis);
+      glm::vec4 p(cameraPos, 1.0f);
+      cameraPos = rot * p;
+    }
+    if (glm::abs(offset.y) > 0) {
+      glm::mat4x4 rot = glm::rotate(glm::identity<glm::mat4x4>(), glm::radians(offset.y), -xAxis);
+      glm::vec4 p(cameraPos, 1.0f);
+      cameraPos = rot * p;
+    }
+
+    constexpr glm::vec3 originPoint(0.0f, 0.0f, 0.0f);
+    cameraDir = glm::normalize(originPoint - cameraPos);
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void LightStudioApp::Present()
+{
+  ImGui::Begin("Material");
+    ImGui::ColorEdit3("ambient", glm::value_ptr(materialAmbient));
+    ImGui::ColorEdit3("diffuse", glm::value_ptr(materialDiffuse));
+    ImGui::ColorEdit3("specular", glm::value_ptr(materialSpecular));
+    ImGui::InputFloat("shininess", &materialShininess);
+  ImGui::End();
+
+  for (size_t i = 0; i < 4; ++i) {
+    const std::string name = "Light " + std::to_string(i + 1);
+    Light& light = lights[i];
+
+    ImGui::Begin(name.c_str());
+      ImGui::ColorEdit3("ambient", glm::value_ptr(light.ambient));
+      ImGui::ColorEdit3("diffuse", glm::value_ptr(light.diffuse));
+      ImGui::ColorEdit3("specular", glm::value_ptr(light.specular));
+
+      ImGui::InputFloat3("direction", glm::value_ptr(light.direction));
+
+      ImGui::InputFloat3("position", glm::value_ptr(light.position));
+      ImGui::InputFloat("quadratic", &light.quadratic);
+      ImGui::InputFloat("linear", &light.linear);
+      ImGui::InputFloat("constant", &light.constant);
+
+      ImGui::Checkbox("enabled", &light.enabled);
+      ImGui::Checkbox("isDirectional", &light.isDirectional);
+    ImGui::End();
+  }
+}
+
+//-----------------------------------------------------------------------------
+
+void LightStudioApp::Cleanup()
+{
+  buffer.Delete();
+  shader.Delete();
 }
 
 //-----------------------------------------------------------------------------

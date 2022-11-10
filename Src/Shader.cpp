@@ -2,6 +2,8 @@
 
 #include <gl/glew.h>
 
+#include <glm/gtc/type_ptr.hpp>
+
 //-----------------------------------------------------------------------------
 
 void Shader::Create(
@@ -40,6 +42,17 @@ void Shader::Delete()
 void Shader::Use()
 {
   glUseProgram(this->id);
+}
+
+//-----------------------------------------------------------------------------
+
+void Shader::SetUniform(
+  const char* uniformName,
+  const glm::mat4x4& value
+) const
+{
+  const int loc = glGetUniformLocation(this->id, uniformName);
+  glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(value));
 }
 
 //-----------------------------------------------------------------------------
