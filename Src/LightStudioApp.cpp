@@ -358,19 +358,22 @@ void LightStudioApp::Present()
     Light& light = lights[i];
 
     ImGui::Begin(name.c_str());
+      ImGui::Checkbox("enabled", &light.enabled);
+      ImGui::Checkbox("isDirectional", &light.isDirectional);
+    
       ImGui::ColorEdit3("ambient", glm::value_ptr(light.ambient));
       ImGui::ColorEdit3("diffuse", glm::value_ptr(light.diffuse));
       ImGui::ColorEdit3("specular", glm::value_ptr(light.specular));
 
-      ImGui::InputFloat3("direction", glm::value_ptr(light.direction));
-
-      ImGui::InputFloat3("position", glm::value_ptr(light.position));
-      ImGui::InputFloat("quadratic", &light.quadratic);
-      ImGui::InputFloat("linear", &light.linear);
-      ImGui::InputFloat("constant", &light.constant);
-
-      ImGui::Checkbox("enabled", &light.enabled);
-      ImGui::Checkbox("isDirectional", &light.isDirectional);
+      if (light.isDirectional) {
+        ImGui::InputFloat3("direction", glm::value_ptr(light.direction));
+      }
+      else {
+        ImGui::InputFloat3("position", glm::value_ptr(light.position));
+        ImGui::InputFloat("quadratic", &light.quadratic);
+        ImGui::InputFloat("linear", &light.linear);
+        ImGui::InputFloat("constant", &light.constant);
+      }
     ImGui::End();
   }
 }
