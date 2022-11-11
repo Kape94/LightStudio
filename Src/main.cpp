@@ -13,11 +13,7 @@ int main()
   app.DefineWindowProperties(winProps);
 
   LightStudioApp lightStudio;
-  app.SetAppInitializer(&lightStudio);
-  app.SetAppRenderer(&lightStudio);
-  app.SetAppUpdater(&lightStudio);
-  app.SetUiPresenter(&lightStudio);
-  app.SetAppCleanup(&lightStudio);
+  app.SetImpl(&lightStudio);
 
   app.Run();
 

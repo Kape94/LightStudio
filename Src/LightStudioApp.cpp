@@ -264,7 +264,7 @@ void LightStudioApp::Render()
     }
 
     if (light.isDirectional) {
-      const std::string iLight = "directionalLights[" + std::to_string(i) + "].";
+      const std::string iLight = "directionalLights[" + std::to_string(nDirectionalLights) + "].";
       shader.SetUniform(std::string(iLight + "ambient").c_str(), light.ambient);
       shader.SetUniform(std::string(iLight + "diffuse").c_str(), light.diffuse);
       shader.SetUniform(std::string(iLight + "specular").c_str(), light.specular);
@@ -273,7 +273,7 @@ void LightStudioApp::Render()
       ++nDirectionalLights;
     }
     else {
-      const std::string iLight = "pointLights[" + std::to_string(i) + "].";
+      const std::string iLight = "pointLights[" + std::to_string(nPointLights) + "].";
       shader.SetUniform(std::string(iLight + "ambient").c_str(), light.ambient);
       shader.SetUniform(std::string(iLight + "diffuse").c_str(), light.diffuse);
       shader.SetUniform(std::string(iLight + "specular").c_str(), light.specular);
