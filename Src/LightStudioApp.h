@@ -9,7 +9,10 @@
 
 #include <glm/vec3.hpp>
 
-#include "Light.h"
+#include "Buffer.h"
+#include "Camera.h"
+#include "LightModel.h"
+#include "PhongPipeline.h"
 
 #define IMPLEMENTS public
 
@@ -30,20 +33,10 @@ class LightStudioApp :
 
   private:
 
-    glm::vec3 materialAmbient;
-    glm::vec3 materialDiffuse;
-    glm::vec3 materialSpecular;
-    float materialShininess;
-
-    Light lights[4];
-
-    glm::vec3 lightAmbient;
-    glm::vec3 lightDiffuse;
-    glm::vec3 lightSpecular;
-    glm::vec3 lightDirection;
-
-    glm::vec3 cameraPos;
-    glm::vec3 cameraDir;
+    LightModel model;
+    PhongPipeline pipeline;
+    Camera camera;
+    Buffer buffer;
 };
 
 #endif
