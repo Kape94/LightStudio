@@ -11,6 +11,8 @@
 
 #include "Buffer.h"
 #include "Camera.h"
+#include "CameraController.h"
+#include "LightControlsUI.h"
 #include "LightModel.h"
 #include "PhongPipeline.h"
 
@@ -33,9 +35,11 @@ class LightStudioApp :
 
   private:
 
+    LightControlsUI ui;
     LightModel model;
     PhongPipeline pipeline;
     Camera camera;
+    CameraController cameraController;
     Buffer buffer;
 };
 
