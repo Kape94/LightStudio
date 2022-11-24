@@ -1,6 +1,7 @@
 #include "LightStudioApp.h"
 
-#include <vector>
+#include "MeshCreator.h"
+#include "MeshData.h"
 
 //-----------------------------------------------------------------------------
 
@@ -8,31 +9,13 @@ void LightStudioApp::Initialize()
 {
   pipeline.Create();
 
-  std::vector<float> vertices = {
-    -1.0f, -1.0f, -1.0f, -0.57f, -0.57f, -0.57f,
-    1.0f, -1.0f, -1.0f, 0.57f, -0.57f, -0.57f,
-    1.0f, 1.0f, -1.0f, 0.57f, 0.57f, -0.57f,
-    -1.0f, 1.0f, -1.0f, -0.57f, 0.57f, -0.57f,
-    -1.0f, 1.0f, 1.0f, -0.57f, 0.57f, 0.57f,
-    1.0f, 1.0f, 1.0f, 0.57f, 0.57f, 0.57f,
-    1.0f, -1.0f, 1.0f, 0.57f, -0.57f, 0.57f,
-    -1.0f, -1.0f, 1.0f, -0.57f, -0.57f, 0.57f
-  };
-  const unsigned nFloats = vertices.size();
-
-  std::vector<unsigned> indices = {
-    0, 1, 2, 0, 2, 3, // front
-    6, 7, 4, 6, 4, 5, // back
-    7, 0, 3, 7, 3, 4, // left
-    1, 6, 5, 1, 5, 2, // right
-    3, 2, 5, 3, 5, 4, // top
-    7, 6, 1, 7, 1, 0  // bottom 
-  };
-  const unsigned nIndices = indices.size();
+  const MeshData cubeData = MeshCreator::CreateCube();
+  const unsigned nFloats = cubeData.vertices.size();
+  const unsigned nIndices = cubeData.indices.size();
   buffer.Create(
-    vertices.data(),
+    cubeData.vertices.data(),
     nFloats,
-    indices.data(),
+    cubeData.indices.data(),
     nIndices,
     { {3, 0}/*position*/, {3, 1}/*normal*/ }
   );
