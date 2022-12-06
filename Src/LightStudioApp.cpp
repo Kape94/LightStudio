@@ -7,18 +7,8 @@
 
 void LightStudioApp::Initialize()
 {
-  pipeline.Create();
-
-  const MeshData cubeData = MeshCreator::CreateCube();
-  const unsigned nFloats = cubeData.vertices.size();
-  const unsigned nIndices = cubeData.indices.size();
-  buffer.Create(
-    cubeData.vertices.data(),
-    nFloats,
-    cubeData.indices.data(),
-    nIndices,
-    { {3, 0}/*position*/, {3, 1}/*normal*/ }
-  );
+  effectManager.Initialize();
+  shapesManager.Initialize();
 
   camera.SetPosition({ 0.0, 0.0, 5.0 });
   camera.LookAtPoint({ 0.0, 0.0, 0.0 });
@@ -32,8 +22,8 @@ void LightStudioApp::Initialize()
 
 void LightStudioApp::Render()
 {
-  pipeline.Use(model, camera);
-  buffer.Render();
+  effectManager.GetCurrentEffect().Use(model, camera);
+  shapesManager.SelectedShape().Render();
 }
 
 //-----------------------------------------------------------------------------
@@ -49,15 +39,15 @@ void LightStudioApp::Update(
 
 void LightStudioApp::Present()
 {
-  ui.PresentUI(model);
+  ui.Present(model, effectManager, shapesManager);
 }
 
 //-----------------------------------------------------------------------------
 
 void LightStudioApp::Cleanup()
 {
-  buffer.Delete();
-  pipeline.Cleanup();
+  shapesManager.Cleanup();
+  effectManager.Cleanup();
 }
 
 //-----------------------------------------------------------------------------

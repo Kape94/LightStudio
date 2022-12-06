@@ -1,4 +1,4 @@
-#include "PhongPipeline.h"
+#include "PhongShadingEffect.h"
 
 #include <string>
 
@@ -148,21 +148,21 @@ namespace ShaderCodes {
 
 //---------------------------------------------------------------------------------------
 
-void PhongPipeline::Create()
+void PhongShadingEffect::Create()
 {
   shader.Create(ShaderCodes::vertexShaderCode, ShaderCodes::fragmentShaderCode);
 }
 
 //---------------------------------------------------------------------------------------
 
-void PhongPipeline::Cleanup()
+void PhongShadingEffect::Cleanup()
 {
   shader.Delete();
 }
 
 //---------------------------------------------------------------------------------------
 
-void PhongPipeline::Use(
+void PhongShadingEffect::Use(
   const LightModel& model,
   const Camera& camera
 )
@@ -212,6 +212,13 @@ void PhongPipeline::Use(
   shader.SetUniform("cameraTransform", camera.CreateTransformationMatrix());
 
   shader.Use();
+}
+
+//---------------------------------------------------------------------------------------
+
+std::string PhongShadingEffect::Name() const
+{
+  return "Phong lightning model";
 }
 
 //---------------------------------------------------------------------------------------

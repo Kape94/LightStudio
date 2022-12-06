@@ -9,12 +9,13 @@
 
 #include <glm/vec3.hpp>
 
+#include "AppUI.h"
 #include "Buffer.h"
 #include "Camera.h"
 #include "CameraController.h"
-#include "LightControlsUI.h"
+#include "EffectManager.h"
 #include "LightModel.h"
-#include "PhongPipeline.h"
+#include "ShapesManager.h"
 
 #define IMPLEMENTS public
 
@@ -35,12 +36,17 @@ class LightStudioApp :
 
   private:
 
-    LightControlsUI ui;
+    EffectManager effectManager;
+    ShapesManager shapesManager;
+
+    AppUI ui;
+
     LightModel model;
-    PhongPipeline pipeline;
     Camera camera;
     CameraController cameraController;
     Buffer buffer;
+
+
 };
 
 #endif

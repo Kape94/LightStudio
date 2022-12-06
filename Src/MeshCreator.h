@@ -7,6 +7,8 @@ namespace MeshCreator {
 
   MeshData CreateCube();
 
+  MeshData CreateIcosahedron();
+
 }
 
 #endif
