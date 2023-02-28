@@ -16,6 +16,11 @@ class PhongShadingEffect : public IEffect {
       const Camera& camera
     ) override;
 
+    void PostProcess(
+      const LightModel& model,
+      const Camera& camera
+    ) override {}
+
     std::string Name() const override;
 
   private:

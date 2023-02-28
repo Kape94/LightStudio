@@ -18,6 +18,11 @@ class IEffect {
       const Camera& camera
     ) = 0;
 
+    virtual void PostProcess(
+      const LightModel& model,
+      const Camera& camera
+    ) = 0;
+
     virtual std::string Name() const = 0;
 };
 

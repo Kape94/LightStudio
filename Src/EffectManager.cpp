@@ -1,5 +1,6 @@
 #include "EffectManager.h"
 
+#include "DeferredShadingEffect.h"
 #include "FlatShadingEffect.h"
 #include "GouraudShadingEffect.h"
 #include "PhongShadingEffect.h"
@@ -13,6 +14,7 @@ void EffectManager::Initialize()
   effects.emplace_back(new PhongShadingEffect);
   effects.emplace_back(new GouraudShadingEffect);
   effects.emplace_back(new FlatShadingEffect);
+  effects.emplace_back(new DeferredShadingEffect);
 
   for (auto& effect : effects) {
     effect->Create();

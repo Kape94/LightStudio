@@ -22,8 +22,10 @@ void LightStudioApp::Initialize()
 
 void LightStudioApp::Render()
 {
-  effectManager.GetCurrentEffect().Use(model, camera);
+  IEffect& effect = effectManager.GetCurrentEffect();
+  effect.Use(model, camera);
   shapesManager.SelectedShape().Render();
+  effect.PostProcess(model, camera);
 }
 
 //-----------------------------------------------------------------------------
