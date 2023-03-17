@@ -30,7 +30,7 @@ For the material the user can setup the ambient, diffuse and specular colors, an
 ## Input
 
 The user can do the following actions in the app:
-- Interacts in the UI to setup the scene parameters;
+- Interact in the UI to setup the scene parameters;
 - Hold the right mouse button to rotate the camera;
 
 ## Building this project
