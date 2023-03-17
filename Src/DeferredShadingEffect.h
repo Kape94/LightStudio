@@ -26,6 +26,20 @@ class DeferredShadingEffect : public IEffect {
 
   private:
 
+    void CreateGBuffer();
+
+    void CreateGBufferTextures();
+
+    unsigned CreateGBufferTexture();
+
+    void CreateDepthRenderBuffer();
+
+    void CreateFrameBuffer();
+
+    void CreateShaders();
+
+    void CreateQuadGeometryBuffer();
+
     unsigned gBuffer;
 
     unsigned gPosition;

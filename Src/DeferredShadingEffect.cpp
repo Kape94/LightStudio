@@ -219,63 +219,89 @@ constexpr unsigned SCREEN_HEIGHT = 960;
 
 void DeferredShadingEffect::Create()
 {
+  CreateGBuffer();
+  CreateShaders();
+  CreateQuadGeometryBuffer();
+}
+
+//---------------------------------------------------------------------------------------
+
+void DeferredShadingEffect::CreateGBuffer()
+{
+  CreateGBufferTextures();
+  CreateDepthRenderBuffer();
+  CreateFrameBuffer();
+}
+
+//---------------------------------------------------------------------------------------
+
+void DeferredShadingEffect::CreateGBufferTextures()
+{
+  gPosition = CreateGBufferTexture();
+  gNormal = CreateGBufferTexture();
+  gAmbient = CreateGBufferTexture();
+  gDiffuse = CreateGBufferTexture();
+  gSpecular = CreateGBufferTexture();
+}
+
+//---------------------------------------------------------------------------------------
+
+unsigned DeferredShadingEffect::CreateGBufferTexture()
+{
+  unsigned textureID;
+
+  glGenTextures(1, &textureID);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  return textureID;
+}
+
+//---------------------------------------------------------------------------------------
+
+void DeferredShadingEffect::CreateDepthRenderBuffer()
+{
+  glGenRenderbuffers(1, &depthRenderBuffer);
+  glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
+//---------------------------------------------------------------------------------------
+
+void DeferredShadingEffect::CreateFrameBuffer()
+{
   glGenFramebuffers(1, &gBuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
-  glGenTextures(1, &gPosition);
-  glBindTexture(GL_TEXTURE_2D, gPosition);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
-
-  glGenTextures(1, &gNormal);
-  glBindTexture(GL_TEXTURE_2D, gNormal);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0);
-
-  glGenTextures(1, &gAmbient);
-  glBindTexture(GL_TEXTURE_2D, gAmbient);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAmbient, 0);
-
-  glGenTextures(1, &gDiffuse);
-  glBindTexture(GL_TEXTURE_2D, gDiffuse);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gDiffuse, 0);
-
-  glGenTextures(1, &gSpecular);
-  glBindTexture(GL_TEXTURE_2D, gSpecular);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCREEN_WIDTH, SCREEN_HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, gSpecular, 0);
 
   unsigned attachments[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
   glDrawBuffers(5, attachments);
 
-  glGenRenderbuffers(1, &depthRenderBuffer);
-  glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT);
-  glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
 
-  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-    exit(-1);
-  }
-
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
+//---------------------------------------------------------------------------------------
+
+void DeferredShadingEffect::CreateShaders()
+{
   firstPassShader.Create(DeferredShadingCodes::FirstPass::vertex, DeferredShadingCodes::FirstPass::fragment);
   secondPassShader.Create(DeferredShadingCodes::SecondPass::vertex, DeferredShadingCodes::SecondPass::fragment);
+}
 
+//---------------------------------------------------------------------------------------
+
+void DeferredShadingEffect::CreateQuadGeometryBuffer()
+{
   const std::vector<float> vertexData = {
     //x, y, z, u, v
     -1, -1, 0, 0, 0,
@@ -288,7 +314,7 @@ void DeferredShadingEffect::Create()
     2, 3, 0
   };
 
-  quadBuffer.Create(vertexData.data(), vertexData.size(), indexData.data(), indexData.size(), 
+  quadBuffer.Create(vertexData.data(), vertexData.size(), indexData.data(), indexData.size(),
     { {3, 0/*position*/}, {2, 1/*uv*/} }
   );
 }
