@@ -1,0 +1,12 @@
+# dependencies
+vcpkg/ 
+vcpkg_installed/
+
+# build
+build/
+
+# imgui configuration
+imgui.ini
+
+# settings
+.vscode/

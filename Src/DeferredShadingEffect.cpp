@@ -1,6 +1,6 @@
 #include "DeferredShadingEffect.h"
 
-#include <gl/glew.h>
+#include <GL/glew.h>
 
 #include <string>
 #include <vector>

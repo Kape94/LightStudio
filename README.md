@@ -37,5 +37,22 @@ The user can do the following actions in the app:
 
 To build this project you only need to have git and CMake installed. The libraries used in this project are installed via vcpkg. To setup the project, do the following steps:
 - Clone this repo;
-- Run Instal.bat
-- Run Build.bat
+- Run:
+
+```
+python project.py init
+python project.py install
+python project.py build
+```
+
+### Linux
+
+If you're building the project on linux, you might need to install these packages:
+
+```
+libxrandr-dev
+libxinerama-dev
+libxcursor-dev
+libxi-dev
+libgl1-mesa-dev
+```
