@@ -15,8 +15,18 @@ class CameraController {
 
   private:
 
+    void EnterCameraControlMode(
+      AppToolkit::IAppUtils& appUtils,
+      const glm::vec2& screenCenter
+    ) const;
+
     void HandleMouseMove(
       Camera& camera, 
+      AppToolkit::IAppUtils& appUtils,
+      const glm::vec2& screenCenter
+    ) const;
+
+    glm::vec2 GetCursorOffset(
       AppToolkit::IAppUtils& appUtils,
       const glm::vec2& screenCenter
     ) const;

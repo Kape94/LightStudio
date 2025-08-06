@@ -4,6 +4,14 @@
 
 //---------------------------------------------------------------------------------------
 
+#ifdef _WIN32
+  constexpr bool SHOULD_USE_CENTERED_CURSOR = true;
+#else
+  constexpr bool SHOULD_USE_CENTERED_CURSOR = false;
+#endif
+
+//---------------------------------------------------------------------------------------
+
 void CameraController::Update(
   Camera& camera, 
   AppToolkit::IAppUtils& appUtils
@@ -11,10 +19,23 @@ void CameraController::Update(
 {
   constexpr glm::vec2 screenCenter(1280 / 2, 960 / 2);
   if (appUtils.IsPressed(AppToolkit::MouseButton::RIGHT)) {
-    appUtils.SetMousePos(screenCenter);
+    EnterCameraControlMode(appUtils, screenCenter);
   }
   if (appUtils.IsHold(AppToolkit::MouseButton::RIGHT)) {
     HandleMouseMove(camera, appUtils, screenCenter);
+  }
+}
+
+//---------------------------------------------------------------------------------------
+
+void CameraController::EnterCameraControlMode(
+  AppToolkit::IAppUtils& appUtils,
+  const glm::vec2& screenCenter
+) const
+{
+  if (SHOULD_USE_CENTERED_CURSOR)
+  {
+    appUtils.SetMousePos(screenCenter);
   }
 }
 
@@ -29,13 +50,29 @@ void CameraController::HandleMouseMove(
   glm::vec3 xAxis, yAxis, zAxis;
   FillCameraAxis(camera, xAxis, yAxis, zAxis);
 
-  const glm::vec2 pos = appUtils.GetMousePos();
-  const glm::vec2 offset = pos - screenCenter;
-  appUtils.SetMousePos(screenCenter);
-
+  const glm::vec2 offset = GetCursorOffset(appUtils, screenCenter);
   MoveCameraWithCursorOffset(camera, offset, xAxis, yAxis);
 
   camera.LookAtPoint({ 0.0f, 0.0f, 0.0f });
+}
+
+//---------------------------------------------------------------------------------------
+
+glm::vec2 CameraController::GetCursorOffset(
+  AppToolkit::IAppUtils& appUtils,
+  const glm::vec2& screenCenter
+) const
+{
+  if (SHOULD_USE_CENTERED_CURSOR)
+  {
+    const glm::vec2 pos = appUtils.GetMousePos();
+    const glm::vec2 offset = pos - screenCenter;
+    appUtils.SetMousePos(screenCenter);
+
+    return offset;
+  }
+  
+  return appUtils.GetMouseMotion();
 }
 
 //---------------------------------------------------------------------------------------
