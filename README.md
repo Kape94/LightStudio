@@ -35,19 +35,22 @@ The user can do the following actions in the app:
 
 ## Building this project
 
-To build this project you only need to have git and CMake installed. The libraries used in this project are installed via vcpkg. To setup the project, do the following steps:
+To build this project I use a helper tool called CppM (https://github.com/Kape94/CppM). To setup the project, do the following steps:
 - Clone this repo;
+- Update submodules:
+  ```bash
+   git submodule update --init --recursive # to pull AppToolkit
+  ```
 - Run:
 
 ```
-python project.py init
-python project.py install
-python project.py build
+cppm init
+cppm build
 ```
 
 ### Linux
 
-If you're building the project on linux, you might need to install these packages:
+If you're building the project on linux, you might need to install these packages on your system:
 
 ```
 libxrandr-dev
