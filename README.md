@@ -44,7 +44,7 @@ To build this project I use a helper tool called CppM (https://github.com/Kape94
 - Run:
 
 ```
-cppm init
+cppm install
 cppm build
 ```
 
